@@ -22,18 +22,19 @@ YCSB+T
 Background
 -----
 
-This project is based on version 0.17.0 of [YCSB](https://github.com/brianfrankcooper/YCSB/releases/tag/0.17.0), with additional support for transaction features as discussed in [Dr. Akon Dey](https://www.linkedin.com/in/akon-dey)'s 2014 IEEE [paper](https://ieeexplore.ieee.org/document/6818330). 
+This project is based on version 0.17.0 of [YCSB](https://github.com/brianfrankcooper/YCSB/releases/tag/0.17.0), with additional support for transaction features as discussed in [Dr. Akon Dey](https://www.linkedin.com/in/akon-dey)'s 2014 IEEE [paper](https://ieeexplore.ieee.org/document/6818330).  
+
 Introduction
 -----
 
-YCSB+T is an extension of the popular Yahoo! Cloud Serving Benchmark (YCSB), designed to measure the performance of cloud-based databases. This enhanced version, YCSB+T, introduces additional functionality for measuring the latency of transactions. Traditional YCSB primarily focused on throughput measurements, neglecting transactional latency. With YCSB+T, we aim to provide a more comprehensive performance evaluation tool by including latency metrics alongside throughput.
+YCSB+T is an extension of the popular Yahoo! Cloud Serving Benchmark (YCSB), designed to measure the performance of cloud-based databases. This enhanced version, YCSB+T, introduces additional functionality for measuring the latency of transactions. Traditional YCSB primarily focused on throughput measurements, neglecting transactional latency. With YCSB+T, we aim to provide a more comprehensive performance evaluation tool by including latency metrics alongside throughput.  
+
 Key Features
 -----
 
 YCSB+T introduces methods such as start(), commit(), and abort() for recording transactional latency. These methods enable users to precisely measure the time taken for each transaction, providing insights into system responsiveness and consistency.
 
 The `ClosedEconomyWorkload` within the framework emulates a closed economy executing database operations such as create, read, update, and delete, among others, allowing for an extensive degree of customization. This setup features post-workload validation to ensure database state consistency, making it a versatile tool for analyzing database scalability and performance.
------
 
 Links
 -----
@@ -45,11 +46,11 @@ Links
 Getting Started
 ---------------
 
-## Step 1: Data Loading with YCSB
+### Step 1: Data Loading with YCSB
 
 First, we will use the original YCSB repository for data loading. This is more efficient as YCSB performs batch inserts and commits each batch instead of each individual record.
 
-### Download and Extract YCSB
+#### 1. Download and Extract YCSB
 
 ```sh
 curl -O --location https://github.com/brianfrankcooper/YCSB/releases/download/0.17.0/ycsb-0.17.0.tar.gz
@@ -57,11 +58,11 @@ tar xfvz ycsb-0.17.0.tar.gz
 cd ycsb-0.17.0
 ```
 
-### Set Up Database
+#### 2. Set Up Database
 
 Configure your database according to the README file found under the specific binding directory of your database in the extracted YCSB folder.
 
-### Load Data
+#### 3. Load Data
 
 - On Linux:
   
@@ -75,11 +76,11 @@ Configure your database according to the README file found under the specific bi
   bin/ycsb.bat load basic -P workloads\workloada
   ```
 
-## Step 2: Running Transactions with YCSB+T
+### Step 2: Running Transactions with YCSB+T
 
 After loading the data using the original YCSB, switch to YCSB+T for the running phase to explicitly coordinate transactions.
 
-### Clone and Build YCSB+T
+#### 1. Clone and Build YCSB+T
 
 ```sh
 curl -O --location https://github.com/kkty39/YCSB-Transactions
@@ -90,7 +91,7 @@ tar -xzf ycsb-{module-name}-binding-0.17.0.tar.gz
 cd ycsb-{module-name}-binding-0.17.0
 ```
 
-### Run Transactions
+#### 2. Run Transactions
 
 Ensure your database is set up for transactions as per the README in the YCSB+T binding directory.
 
@@ -108,7 +109,7 @@ Ensure your database is set up for transactions as per the README in the YCSB+T 
   ./bin/ycsb.bat run {module-name} -P workloads\workloada
   ```
 
-## Additional Notes
+### Additional Notes
 
 - The `{module-name}` placeholder should be replaced with the name of the specific database binding you are testing, such as `cloudspanner`.
 - For detailed configuration options and database-specific setup, refer to the README files within each binding's directory in both YCSB and YCSB+T repositories.
