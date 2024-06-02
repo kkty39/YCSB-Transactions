@@ -160,3 +160,21 @@ For example:
 To run with the synchronous driver from MongoDB Inc.:
 
     ./bin/ycsb load mongodb -s -P workloads/workloada -p mongodb.url=mongodb://localhost:27017/ycsb?w=0
+
+
+## Running MongoDB on Linux VM with 
+
+### Load
+To load the data, modify the mongodb.url from the local version. Here is a page from MongoDB with useful information on how to do that: https://www.mongodb.com/docs/v3.0/reference/connection-string/. 
+The following example load the data into a database called “ycsbt” in a replica set called “ycsb” with write concern, w=1 (meaning it requests acknowledgment that the write operation has propagated to the primary in a replica set.) 
+
+    ./bin/ycsb load mongodb -s -P workloads/workloadb -p recordcount=500000 -p mongodb.url="mongodb://host1:27017,host2:27017,host3:27017/ycsbt?replicaSet=ycsb&w=1" > load.txt
+
+Additional options include thread count, batch size for batch upload.
+
+    ./bin/ycsb load mongodb -s -P workloads/workloadb -threads 32 -p recordcount=500000 -p mongodb.batchsize=100 -p mongodb.url="mongodb://host1:27017,host2:27017,host3:27017/ycsbt?replicaSet=ycsb&w=1" > load.txt
+
+### Run
+To run a workload, keep the same mongodb.url. Additional options include thread count, measurement type, and request distribution. 
+
+    ./bin/ycsb run mongodb -s -P workloads/workloada -p recordcount=500000 -p operationcount=100000 -p requestdistribution=uniform -threads 256 -p mongodb.url="mongodb://host1:27017,host2:27017,host3:27017/ycsbt?replicaSet=ycsb&w=1" > run.txt
