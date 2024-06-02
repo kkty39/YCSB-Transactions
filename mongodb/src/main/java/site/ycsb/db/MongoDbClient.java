@@ -56,7 +56,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <p>
  * See the <code>README.md</code> for configuration information.
  * </p>
- * 
+ *
  * @author ypai
  * @see <a href="http://docs.mongodb.org/ecosystem/drivers/java/">MongoDB Inc.
  *      driver</a>
@@ -134,7 +134,7 @@ public class MongoDbClient extends DB {
 
   /**
    * Delete a record from the database.
-   * 
+   *
    * @param table
    *          The name of the table
    * @param key
@@ -149,7 +149,7 @@ public class MongoDbClient extends DB {
 
       Document query = new Document("_id", key);
       DeleteResult result =
-          collection.withWriteConcern(writeConcern).deleteOne(query);
+          collection.withWriteConcern(writeConcern).deleteOne(session, query);
       if (result.wasAcknowledged() && result.getDeletedCount() == 0) {
         System.err.println("Nothing deleted for key " + key);
         return Status.NOT_FOUND;
@@ -241,7 +241,7 @@ public class MongoDbClient extends DB {
    * Insert a record in the database. Any field/value pairs in the specified
    * values HashMap will be written into the record with the specified record
    * key.
-   * 
+   *
    * @param table
    *          The name of the table
    * @param key
@@ -253,7 +253,7 @@ public class MongoDbClient extends DB {
    */
   @Override
   public Status insert(String table, String key,
-      Map<String, ByteIterator> values) {
+                       Map<String, ByteIterator> values) {
     try {
       MongoCollection<Document> collection = database.getCollection(table);
       Document toInsert = new Document("_id", key);
@@ -275,7 +275,7 @@ public class MongoDbClient extends DB {
         bulkInserts.add(toInsert);
         if (bulkInserts.size() == batchSize) {
           if (useUpsert) {
-            List<UpdateOneModel<Document>> updates = 
+            List<UpdateOneModel<Document>> updates =
                 new ArrayList<UpdateOneModel<Document>>(bulkInserts.size());
             for (Document doc : bulkInserts) {
               updates.add(new UpdateOneModel<Document>(
@@ -304,7 +304,7 @@ public class MongoDbClient extends DB {
   /**
    * Read a record from the database. Each field/value pair from the result will
    * be stored in a HashMap.
-   * 
+   *
    * @param table
    *          The name of the table
    * @param key
@@ -317,12 +317,12 @@ public class MongoDbClient extends DB {
    */
   @Override
   public Status read(String table, String key, Set<String> fields,
-      Map<String, ByteIterator> result) {
+                     Map<String, ByteIterator> result) {
     try {
       MongoCollection<Document> collection = database.getCollection(table);
       Document query = new Document("_id", key);
 
-      FindIterable<Document> findIterable = collection.find(query);
+      FindIterable<Document> findIterable = collection.find(session, query);
 
       if (fields != null) {
         Document projection = new Document();
@@ -347,7 +347,7 @@ public class MongoDbClient extends DB {
   /**
    * Perform a range scan for a set of records in the database. Each field/value
    * pair from the result will be stored in a HashMap.
-   * 
+   *
    * @param table
    *          The name of the table
    * @param startkey
@@ -364,7 +364,7 @@ public class MongoDbClient extends DB {
    */
   @Override
   public Status scan(String table, String startkey, int recordcount,
-      Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
+                     Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
     MongoCursor<Document> cursor = null;
     try {
       MongoCollection<Document> collection = database.getCollection(table);
@@ -374,7 +374,7 @@ public class MongoDbClient extends DB {
       Document sort = new Document("_id", INCLUDE);
 
       FindIterable<Document> findIterable =
-          collection.find(query).sort(sort).limit(recordcount);
+          collection.find(session, query).sort(sort).limit(recordcount);
 
       if (fields != null) {
         Document projection = new Document();
@@ -418,7 +418,7 @@ public class MongoDbClient extends DB {
    * Update a record in the database. Any field/value pairs in the specified
    * values HashMap will be written into the record with the specified record
    * key, overwriting any existing values with the same field name.
-   * 
+   *
    * @param table
    *          The name of the table
    * @param key
@@ -430,7 +430,7 @@ public class MongoDbClient extends DB {
    */
   @Override
   public Status update(String table, String key,
-      Map<String, ByteIterator> values) {
+                       Map<String, ByteIterator> values) {
     try {
       MongoCollection<Document> collection = database.getCollection(table);
 
@@ -441,7 +441,7 @@ public class MongoDbClient extends DB {
       }
       Document update = new Document("$set", fieldsToSet);
 
-      UpdateResult result = collection.updateOne(query, update);
+      UpdateResult result = collection.updateOne(session, query, update);
       if (result.wasAcknowledged() && result.getMatchedCount() == 0) {
         System.err.println("Nothing updated for key " + key);
         return Status.NOT_FOUND;
@@ -455,7 +455,7 @@ public class MongoDbClient extends DB {
 
   /**
    * Fills the map with the values from the DBObject.
-   * 
+   *
    * @param resultMap
    *          The map to fill/
    * @param obj
@@ -477,11 +477,15 @@ public class MongoDbClient extends DB {
   }
 
   @Override
-  public void commit(){
+  public void commit() throws DBException {
     // todo: might need to add try-catch block for exceptions like MongoCommandException, etc.
     // after catching the exception, throw DBException
-    session.commitTransaction();
-    session.close();
+    try {
+      session.commitTransaction();
+      session.close();
+    } catch (Exception e){
+      throw new DBException(e);
+    }
   }
 
   @Override

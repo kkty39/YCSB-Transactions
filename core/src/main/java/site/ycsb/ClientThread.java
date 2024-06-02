@@ -139,13 +139,13 @@ public class ClientThread implements Runnable {
               }
 
             } catch (DBException ignored) {
-              // ignored
+              // This catches a transaction abort
             }
 
             // if transaction operation fails or commit fails, we retry and abort the previous transaction
             retryCount++;
             // null op if already aborted
-            db.abort();
+            // db.abort();
 
             if (retryCount > maxRetryCount) {
               break;
