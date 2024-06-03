@@ -177,4 +177,4 @@ Additional options include thread count, batch size for batch upload.
 ### Run
 To run a workload, keep the same mongodb.url. Additional options include thread count, measurement type, and request distribution. 
 
-    ./bin/ycsb run mongodb -s -P workloads/workloada -p recordcount=500000 -p operationcount=100000 -p requestdistribution=uniform -threads 256 -p mongodb.url="mongodb://host1:27017,host2:27017,host3:27017/ycsbt?replicaSet=ycsb&w=1" > run.txt
+    ./bin/ycsb run mongodb -s -P workloads/workloada -p recordcount=500000 -p operationcount=100000 -p requestdistribution=uniform -threads 256 -p measurementtype=timesseries+histogram -p mongodb.url="mongodb://host1:27017,host2:27017,host3:27017/ycsbt?replicaSet=ycsb&w=1" > run.txt
