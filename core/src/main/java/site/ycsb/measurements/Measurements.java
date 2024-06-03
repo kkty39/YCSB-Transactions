@@ -147,7 +147,7 @@ public class Measurements {
       return new TwoInOneMeasurement(name,
           new OneMeasurementTimeSeries(name, props),
           new OneMeasurementHistogram(name, props));
-      default:
+    default:
       throw new AssertionError("Impossible to be here. Dead code reached. Bugs?");
     }
   }
