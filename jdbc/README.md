@@ -22,8 +22,11 @@ This driver enables YCSB to work with databases accessible via the JDBC protocol
 ### 1. Start your database
 This driver will connect to databases that use the JDBC protocol, please refer to your databases documentation on information on how to install, configure and start your system.
 
-### 2. Set up YCSB
-You can clone the YCSB project and compile it to stay up to date with the latest changes. Or you can just download the latest release and unpack it. Either way, instructions for doing so can be found here: https://github.com/brianfrankcooper/YCSB.
+### 2. Set up YCSB and YCSB-Transcations
+For quicker workload loading, You can clone the YCSB project (https://github.com/brianfrankcooper/YCSB.) and compile it to stay up to date with the latest changes. For example, to only get jdbc binding for both YSCB project and YCSB-Transcations project:
+```
+mvn -pl site.ycsb:jdbc-binding -am clean package
+```
 
 ### 3. Configure your database and table.
 You can name your database what ever you want, you will need to provide the database name in the JDBC connection string.
@@ -134,3 +137,41 @@ Some JDBC drivers support re-writing batched insert statements into multi-row in
 - set JDBC driver specific connection parameter in **db.url** to enable the rewrite as shown in the examples below:
   * MySQL [rewriteBatchedStatements=true](https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-configuration-properties.html) with `db.url=jdbc:mysql://127.0.0.1:3306/ycsb?rewriteBatchedStatements=true`
   * Postgres [reWriteBatchedInserts=true](https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters) with `db.url=jdbc:postgresql://127.0.0.1:5432/ycsb?reWriteBatchedInserts=true`
+
+## Example Usage in Self-Hosted CockroachDB
+### 1. Set up PostegreSQL dependency
+To enable YCSB and YCSB-Transactions to work with CockroachDB, make sure you have PostgreSQL specified, for example, in `pom.xml` file, include below code before unpack jdbc binding:
+```xml
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>42.2.27</version>
+    </dependency>
+```
+
+### 2. Configuration Properties for Load
+Properties can be configured in `<your-file-name>.properties`, or directly pass in command line, note that each config should start with `-p`.
+```
+db.driver=org.postgresql.Driver # The postgresql driver class to use
+db.url=jdbc:postgresql://<your-db-url> # The Database connection URL
+jdbc.autocommit=true # The JDBC connection auto-commit property for the driver.
+jdbc.batchupdateapi=false
+```
+
+The following example loads the data into a database called “ycsbt”, including thread count, record count:
+```
+./bin/ycsb.sh load jdbc -P /your/properties/file/dir/<your-file-name>.properties -P workloads/workloada -p recordcount=500000 -threads 32 -p 'db.url=jdbc:postgresql://host1:26257/ycsbt?user=user1&password=securepass' -s > load-500k-32t.csv
+```
+
+### 3. Configuration Properties for Run
+To run a workload, keep the same db.url with specifying jdbc.autocommit to false. Additional options include thread count, measurement type, and request distribution.
+```
+db.driver=org.postgresql.Driver # The postgresql driver class to use
+db.url=jdbc:postgresql://<your-db-url> # The Database connection URL
+jdbc.autocommit=false # The JDBC connection auto-commit property for the driver in YCSB-Transcations
+```
+
+For example:
+```
+./bin/ycsb.sh run jdbc -P /your/properties/file/dir/<your-file-name>.properties -P workloads/workloada -p recordcount=500000 -p operationcount=100000 -p requestdistribution=uniform -threads 32 -p 'db.url=jdbc:postgresql://host1:26257/ycsbt?user=user1&password=securepass' -s > run-500k-32t-F-TX.csv
+```
